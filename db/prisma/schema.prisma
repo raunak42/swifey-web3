@@ -1,0 +1,115 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Profile fields
+  name            String
+  dateOfBirth     DateTime
+  gender          Gender
+  graduatedFrom   String
+  currentlyWorking String
+  
+  // Verification fields
+  isVerified      Boolean   @default(false)
+  verificationId  String?   // Reclaim Protocol verification ID
+  verifiedFields  String[]  // Array of verified field names
+  
+  // Wallet & Staking
+  walletAddress   String    @unique
+  totalStaked     Float     @default(0)
+  
+  // Relationships
+  sentConnections     Connection[] @relation("SentConnections")
+  receivedConnections Connection[] @relation("ReceivedConnections")
+  messages           Message[]
+  
+  // Explicit many-to-many relations
+  chatParticipants ChatParticipant[]
+}
+
+model Connection {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Staking info
+  senderStake     Float     @default(0)
+  receiverStake   Float     @default(0)
+  status          ConnectionStatus
+  
+  // Relationship fields
+  senderId    String    @db.ObjectId
+  sender      User      @relation("SentConnections", fields: [senderId], references: [id])
+  receiverId  String    @db.ObjectId
+  receiver    User      @relation("ReceivedConnections", fields: [receiverId], references: [id])
+  
+  // Associated chat
+  chat        Chat?
+  
+  @@unique([senderId, receiverId])
+}
+
+model Chat {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Chat preferences
+  retainHistory Boolean   @default(true)
+  
+  // Relationships
+  connectionId  String    @unique @db.ObjectId
+  connection    Connection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  messages      Message[]
+  
+  // Explicit many-to-many relations
+  participants  ChatParticipant[]
+}
+
+// Explicit relation model for Chat-User many-to-many relationship
+model ChatParticipant {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  chatId    String   @db.ObjectId
+  userId    String   @db.ObjectId
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  joinedAt  DateTime @default(now())
+
+  @@unique([chatId, userId])
+}
+
+model Message {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime  @default(now())
+  content   String
+  
+  // Relationships
+  chatId    String    @db.ObjectId
+  chat      Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  senderId  String    @db.ObjectId
+  sender    User      @relation(fields: [senderId], references: [id])
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum ConnectionStatus {
+  PENDING
+  ACTIVE
+  WITHDRAWN
+}
