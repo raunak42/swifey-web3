@@ -1,74 +1,104 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
+import { useEffect, useState } from 'react';
+import { StyleSheet, ScrollView } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
+
+interface User {
+  name: string;
+  dateOfBirth: string;
+  currentlyWorking: string;
+  graduatedFrom: string;
+}
 
 export default function HomeScreen() {
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+        const response = await fetch('/api/getAllUsers');
+        const data = await response.json();
+        setUsers(data.users);
+    };
+    fetchUsers();
+  }, []);
+
+
+  const calculateAge = (dateOfBirth: string) => {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
+    <ScrollView>
+      <ThemedView style={styles.container}>
+        <ThemedText type="title" style={styles.headerText}>Our Community</ThemedText>
+        
+        {users.map((user, index) => (
+          <ThemedView key={index} style={styles.userCard}>
+            <ThemedView style={styles.userHeader}>
+              <ThemedText type="subtitle">{user.name}</ThemedText>
+              <ThemedText type="defaultSemiBold">{calculateAge(user.dateOfBirth)} years</ThemedText>
+            </ThemedView>
+            
+            <ThemedView style={styles.userDetails}>
+              <ThemedView style={styles.detailRow}>
+                <ThemedText type="defaultSemiBold">🏢 Working at:</ThemedText>
+                <ThemedText>{user.currentlyWorking}</ThemedText>
+              </ThemedView>
+              
+              <ThemedView style={styles.detailRow}>
+                <ThemedText type="defaultSemiBold">🎓 Graduated from:</ThemedText>
+                <ThemedText>{user.graduatedFrom}</ThemedText>
+              </ThemedView>
+            </ThemedView>
+          </ThemedView>
+        ))}
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    padding: 16,
+  },
+  headerText: {
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  userCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  userHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 8,
+    marginBottom: 12,
+    padding:16,
+    borderRadius:10
   },
-  stepContainer: {
+  userDetails: {
     gap: 8,
-    marginBottom: 8,
+    padding:20,
+    borderRadius:10
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 });
