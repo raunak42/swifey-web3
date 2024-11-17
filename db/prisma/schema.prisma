@@ -16,18 +16,19 @@ model User {
   
   // Profile fields
   name            String
+  password        String
   dateOfBirth     DateTime
   gender          Gender
   graduatedFrom   String
   currentlyWorking String
   
   // Verification fields
-  isVerified      Boolean   @default(false)
+  isVerified      Boolean?   @default(false)
   verificationId  String?   // Reclaim Protocol verification ID
   verifiedFields  String[]  // Array of verified field names
   
   // Wallet & Staking
-  walletAddress   String    @unique
+  walletAddress   String?    @unique
   totalStaked     Float     @default(0)
   
   // Relationships
