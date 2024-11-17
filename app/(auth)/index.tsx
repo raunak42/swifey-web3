@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { z } from "zod";
+import { startSession } from "../../utils/session";
 
 export interface FormData {
   name: string;
@@ -261,8 +262,6 @@ export default function Signup(): JSX.Element {
         )
       };
 
-      console.log("Form submitted with data:", transformedData);
-
       const res = await fetch("api/createUser", {
         method: "POST",
         cache: "no-store",
@@ -271,7 +270,11 @@ export default function Signup(): JSX.Element {
       const data = await res.json();
 
       if (data.status === 200) {
-        router.push("/(tabs)")
+        await startSession({
+          userId: data.userId,
+          name: data.name,
+        });
+        router.push("/(tabs)");
       }
     } catch (error) {
       console.error(error);
