@@ -5,12 +5,15 @@ export interface createUserProps {
     dateOfBirth: Date;
     gender: "MALE" | "FEMALE" | "OTHER";
     graduatedFrom: string;
-    currentlyWorkingAt: string;
+    currentlyWorking: string;
     walletAddress: string
+    password: string;
+
 }
 
 export async function POST(req: Request) {
     const body: createUserProps = await req.json()
+    console.log(body)
 
     const res = await prisma.user.create({
         data: {
@@ -18,10 +21,12 @@ export async function POST(req: Request) {
             dateOfBirth: body.dateOfBirth,
             gender: body.gender,
             graduatedFrom: body.graduatedFrom,
-            currentlyWorking: body.currentlyWorkingAt,
-            walletAddress: body.walletAddress,
+            currentlyWorking: body.currentlyWorking,
+            password: body.password
         }
     })
+
+    console.log("res:", res)
 
     return Response.json({ message: res, status: 200 })
 }
