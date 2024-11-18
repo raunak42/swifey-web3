@@ -53,6 +53,33 @@ export default function ReclaimDemo() {
     const [verifiedUsername, setVerifiedUsername] = useState<string | null>(null);
    
     useEffect(() => {
+      const subscription = Linking.addEventListener('url', ({ url }) => {
+        if (url.includes('reclaim-callback')) {
+          console.log('Redirected back to app:', url);
+          const urlParams = new URLSearchParams(url.split('?')[1]);
+          const proofParams = urlParams.get('proofs');
+          if (proofParams) {
+            try {
+              const proofs = JSON.parse(decodeURIComponent(proofParams));
+              console.log('Parsed proofs:', proofs);
+              const username = proofs?.credentials?.[0]?.provider?.username || 
+                              proofs?.claimData?.context?.username ||
+                              proofs?.parameters?.username;
+              if (username) {
+                setVerifiedUsername(username);
+                setStatus('Verification successful!');
+              } else {
+                console.log('Username not found in proof structure:', proofs);
+                setStatus('Username not found in verification data');
+              }
+            } catch (error) {
+              console.error('Error parsing proof data:', error);
+              setStatus('Error processing verification result');
+            }
+          }
+        }
+      });
+   
       async function setup() {
         try {
           setStatus('Starting initialization...');
@@ -90,6 +117,10 @@ export default function ReclaimDemo() {
       }
    
       setup();
+   
+      return () => {
+        subscription.remove();
+      };
     }, []);
    
     const openRequestUrl = () => {
@@ -101,7 +132,7 @@ export default function ReclaimDemo() {
     return (
       <View style={{ padding: 20 }}>
         <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Reclaim Demo</Text>
-        <Text>Status: {status}</Text>
+        <Text style={{ fontSize: 18, color: 'green' }}>Status: {status}</Text>
         {requestUrl && !verifiedUsername && (
           <Button title="Start Verification" onPress={openRequestUrl} />
         )}
