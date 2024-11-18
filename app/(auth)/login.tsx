@@ -14,6 +14,7 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import { z } from "zod";
 import { startSession } from "../../utils/session";
+import { BASE_NET } from "@/constants/urls";
 
 interface LoginFormData {
   name: string;
@@ -31,7 +32,11 @@ interface InputContainerProps {
   error?: string;
 }
 
-const InputContainer: React.FC<InputContainerProps> = ({ label, children, error }) => (
+const InputContainer: React.FC<InputContainerProps> = ({
+  label,
+  children,
+  error,
+}) => (
   <View style={styles.inputContainer}>
     <Text style={styles.label}>{label}</Text>
     {children}
@@ -54,21 +59,21 @@ export default function Login(): JSX.Element {
       loginSchema.parse(formData);
       setIsSubmitting(true);
 
-      const res = await fetch("/api/login", {
+      const res = await fetch(`${BASE_NET}/api/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
-      
+
       const data = await res.json();
-      console.log("data:", data)
+      console.log("data:", data);
 
       if (data.status === 401) {
         setErrors({
           name: "Invalid credentials",
-          password: "Invalid credentials"
+          password: "Invalid credentials",
         });
         return;
       }
@@ -81,7 +86,7 @@ export default function Login(): JSX.Element {
         router.push("/(tabs)");
       } else {
         setErrors({
-          name: "Login failed"
+          name: "Login failed",
         });
       }
     } catch (error) {
@@ -100,7 +105,10 @@ export default function Login(): JSX.Element {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       <View style={styles.formContainer}>
         <Text style={styles.title}>Login</Text>
 
@@ -109,7 +117,9 @@ export default function Login(): JSX.Element {
           <TextInput
             style={[styles.input, errors.name && styles.inputError]}
             value={formData.name}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
+            onChangeText={(text) =>
+              setFormData((prev) => ({ ...prev, name: text }))
+            }
             placeholder="Enter your name"
             placeholderTextColor="#666"
           />
@@ -119,14 +129,20 @@ export default function Login(): JSX.Element {
         <InputContainer label="Password" error={errors.password}>
           <View style={styles.passwordContainer}>
             <TextInput
-              style={[styles.input, styles.passwordInput, errors.password && styles.inputError]}
+              style={[
+                styles.input,
+                styles.passwordInput,
+                errors.password && styles.inputError,
+              ]}
               value={formData.password}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, password: text }))}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, password: text }))
+              }
               placeholder="Enter your password"
               placeholderTextColor="#666"
               secureTextEntry={!showPassword}
             />
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.passwordVisibilityButton}
               onPress={() => setShowPassword(!showPassword)}
             >
@@ -138,8 +154,11 @@ export default function Login(): JSX.Element {
         </InputContainer>
 
         {/* Submit Button */}
-        <TouchableOpacity 
-          style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]} 
+        <TouchableOpacity
+          style={[
+            styles.submitButton,
+            isSubmitting && styles.submitButtonDisabled,
+          ]}
           onPress={handleSubmit}
           disabled={isSubmitting}
         >
@@ -282,27 +301,27 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   errorText: {
-    color: '#ff3b30',
+    color: "#ff3b30",
     fontSize: 14,
     marginTop: 5,
   },
   inputError: {
-    borderColor: '#ff3b30',
+    borderColor: "#ff3b30",
   },
   passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   passwordInput: {
     flex: 1,
   },
   passwordVisibilityButton: {
-    position: 'absolute',
+    position: "absolute",
     right: 12,
     padding: 8,
   },
   passwordVisibilityButtonText: {
-    color: '#007AFF',
+    color: "#007AFF",
     fontSize: 16,
   },
   passwordRequirements: {
@@ -310,11 +329,11 @@ const styles = StyleSheet.create({
     paddingLeft: 4,
   },
   passwordRequirementText: {
-    color: '#666',
+    color: "#666",
     fontSize: 14,
     marginBottom: 4,
   },
   passwordRequirementMet: {
-    color: '#34C759',
+    color: "#34C759",
   },
 });

@@ -14,6 +14,7 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import { z } from "zod";
 import { startSession } from "../../utils/session";
+import { BASE_NET } from "@/constants/urls";
 
 export interface FormData {
   name: string;
@@ -51,7 +52,11 @@ const months = [
   "December",
 ];
 
-const InputContainer: React.FC<InputContainerProps> = ({ label, children, error }) => (
+const InputContainer: React.FC<InputContainerProps> = ({
+  label,
+  children,
+  error,
+}) => (
   <View style={styles.inputContainer}>
     <Text style={styles.label}>{label}</Text>
     {children}
@@ -182,27 +187,37 @@ const MonthSelector: React.FC<{
 // Add validation schema
 const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(50),
-  dateOfBirth: z.object({
-    day: z.number().min(1).max(31),
-    month: z.string().refine((val) => months.includes(val), "Please select a valid month"),
-    year: z.number().min(1900).max(new Date().getFullYear()),
-  }).refine(
-    (data) => {
+  dateOfBirth: z
+    .object({
+      day: z.number().min(1).max(31),
+      month: z
+        .string()
+        .refine((val) => months.includes(val), "Please select a valid month"),
+      year: z.number().min(1900).max(new Date().getFullYear()),
+    })
+    .refine((data) => {
       const date = new Date(data.year, months.indexOf(data.month), data.day);
       return date instanceof Date && !isNaN(date.getTime());
-    },
-    "Please enter a valid date"
-  ),
+    }, "Please enter a valid date"),
   gender: z.enum(["prefer-not-to-say", "MALE", "FEMALE", "OTHER"]),
-  graduatedFrom: z.string().min(2, "Institution name must be at least 2 characters").max(100),
-  currentlyWorking: z.string().min(2, "Current role must be at least 2 characters").max(100),
+  graduatedFrom: z
+    .string()
+    .min(2, "Institution name must be at least 2 characters")
+    .max(100),
+  currentlyWorking: z
+    .string()
+    .min(2, "Current role must be at least 2 characters")
+    .max(100),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(/[a-z]/, "Password must contain at least one lowercase letter")
     .regex(/[0-9]/, "Password must contain at least one number")
-    .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
+    .regex(
+      /[^A-Za-z0-9]/,
+      "Password must contain at least one special character"
+    ),
 });
 
 type ValidationErrors = {
@@ -259,10 +274,10 @@ export default function Signup(): JSX.Element {
           formData.dateOfBirth.year,
           months.indexOf(formData.dateOfBirth.month),
           formData.dateOfBirth.day
-        )
+        ),
       };
 
-      const res = await fetch("api/createUser", {
+      const res = await fetch(`${BASE_NET}/api/createUser`, {
         method: "POST",
         cache: "no-store",
         body: JSON.stringify(transformedData),
@@ -284,11 +299,16 @@ export default function Signup(): JSX.Element {
     }
   };
 
-  const handleTextInput = (
-    field: keyof Pick<FormData, "name" | "graduatedFrom" | "currentlyWorking" | "password">
-  ) => (text: string): void => {
-    setFormData((prev) => ({ ...prev, [field]: text }));
-  };
+  const handleTextInput =
+    (
+      field: keyof Pick<
+        FormData,
+        "name" | "graduatedFrom" | "currentlyWorking" | "password"
+      >
+    ) =>
+    (text: string): void => {
+      setFormData((prev) => ({ ...prev, [field]: text }));
+    };
 
   const handleGenderChange = (value: Gender): void => {
     setFormData((prev) => ({ ...prev, gender: value }));
@@ -319,9 +339,9 @@ export default function Signup(): JSX.Element {
           <View style={styles.passwordContainer}>
             <TextInput
               style={[
-                styles.input, 
+                styles.input,
                 styles.passwordInput,
-                errors.password && styles.inputError
+                errors.password && styles.inputError,
               ]}
               value={formData.password}
               onChangeText={handleTextInput("password")}
@@ -329,7 +349,7 @@ export default function Signup(): JSX.Element {
               placeholderTextColor="#666"
               secureTextEntry={!showPassword}
             />
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.passwordVisibilityButton}
               onPress={() => setShowPassword(!showPassword)}
             >
@@ -343,34 +363,49 @@ export default function Signup(): JSX.Element {
               <Text style={styles.passwordRequirementText}>
                 Password must contain:
               </Text>
-              <Text style={[
-                styles.passwordRequirementText,
-                formData.password.length >= 8 && styles.passwordRequirementMet
-              ]}>
+              <Text
+                style={[
+                  styles.passwordRequirementText,
+                  formData.password.length >= 8 &&
+                    styles.passwordRequirementMet,
+                ]}
+              >
                 • At least 8 characters
               </Text>
-              <Text style={[
-                styles.passwordRequirementText,
-                /[A-Z]/.test(formData.password) && styles.passwordRequirementMet
-              ]}>
+              <Text
+                style={[
+                  styles.passwordRequirementText,
+                  /[A-Z]/.test(formData.password) &&
+                    styles.passwordRequirementMet,
+                ]}
+              >
                 • One uppercase letter
               </Text>
-              <Text style={[
-                styles.passwordRequirementText,
-                /[a-z]/.test(formData.password) && styles.passwordRequirementMet
-              ]}>
+              <Text
+                style={[
+                  styles.passwordRequirementText,
+                  /[a-z]/.test(formData.password) &&
+                    styles.passwordRequirementMet,
+                ]}
+              >
                 • One lowercase letter
               </Text>
-              <Text style={[
-                styles.passwordRequirementText,
-                /[0-9]/.test(formData.password) && styles.passwordRequirementMet
-              ]}>
+              <Text
+                style={[
+                  styles.passwordRequirementText,
+                  /[0-9]/.test(formData.password) &&
+                    styles.passwordRequirementMet,
+                ]}
+              >
                 • One number
               </Text>
-              <Text style={[
-                styles.passwordRequirementText,
-                /[^A-Za-z0-9]/.test(formData.password) && styles.passwordRequirementMet
-              ]}>
+              <Text
+                style={[
+                  styles.passwordRequirementText,
+                  /[^A-Za-z0-9]/.test(formData.password) &&
+                    styles.passwordRequirementMet,
+                ]}
+              >
                 • One special character
               </Text>
             </View>
@@ -449,7 +484,10 @@ export default function Signup(): JSX.Element {
         </InputContainer>
 
         {/* Currently Working */}
-        <InputContainer label="Currently Working" error={errors.currentlyWorking}>
+        <InputContainer
+          label="Currently Working"
+          error={errors.currentlyWorking}
+        >
           <TextInput
             style={[styles.input, errors.currentlyWorking && styles.inputError]}
             value={formData.currentlyWorking}
@@ -460,8 +498,11 @@ export default function Signup(): JSX.Element {
         </InputContainer>
 
         {/* Submit Button */}
-        <TouchableOpacity 
-          style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]} 
+        <TouchableOpacity
+          style={[
+            styles.submitButton,
+            isSubmitting && styles.submitButtonDisabled,
+          ]}
           onPress={handleSubmit}
           disabled={isSubmitting}
         >
@@ -604,27 +645,27 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   errorText: {
-    color: '#ff3b30',
+    color: "#ff3b30",
     fontSize: 14,
     marginTop: 5,
   },
   inputError: {
-    borderColor: '#ff3b30',
+    borderColor: "#ff3b30",
   },
   passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   passwordInput: {
     flex: 1,
   },
   passwordVisibilityButton: {
-    position: 'absolute',
+    position: "absolute",
     right: 12,
     padding: 8,
   },
   passwordVisibilityButtonText: {
-    color: '#007AFF',
+    color: "#007AFF",
     fontSize: 16,
   },
   passwordRequirements: {
@@ -632,11 +673,11 @@ const styles = StyleSheet.create({
     paddingLeft: 4,
   },
   passwordRequirementText: {
-    color: '#666',
+    color: "#666",
     fontSize: 14,
     marginBottom: 4,
   },
   passwordRequirementMet: {
-    color: '#34C759',
+    color: "#34C759",
   },
 });

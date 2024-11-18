@@ -5,16 +5,50 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "exp+swifey-web3",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourcompany.swifey-web3",
+      "associatedDomains": ["applinks:phantom.app"],
+      "infoPlist": {
+        "LSApplicationQueriesSchemes": ["phantom"]
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "package": "com.yourcompany.swifeyweb3",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "exp+swifey-web3"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
+      "permissions": [
+        "QUERY_ALL_PACKAGES"
+      ],
+      "queries": {
+        "packages": [
+          "app.phantom"
+        ],
+        "intent": [
+          {
+            "action": "VIEW",
+            "data": {
+              "scheme": "phantom"
+            }
+          }
+        ]
       }
     },
     "web": {

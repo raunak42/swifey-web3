@@ -12,6 +12,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import * as Crypto from 'expo-crypto';
 import Constants from 'expo-constants';
+import { BASE_NET } from '@/constants/urls';
 
 export default function WalletScreen() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
@@ -260,7 +261,7 @@ async function updateUserWallet(address: string) {
   // Implement your database update logic here
   // You'll need to identify the current user and update their wallet address
   try {
-    const response = await fetch('http://192.168.74.111:8081/api/updateWallet', {
+    const response = await fetch(`${BASE_NET}/api/updateWallet`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
