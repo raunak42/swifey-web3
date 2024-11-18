@@ -1,0 +1,1 @@
+export const BASE_NET = "http://192.168.74.111:8081"
